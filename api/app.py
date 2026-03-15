@@ -1,44 +1,27 @@
 from fastapi import FastAPI, HTTPException, UploadFile, File
 from typing import Dict, Any
-import asyncio
-import os
-
-from hive.pipeline import Pipeline
+import uuid
 
 app = FastAPI(title="DOC-CHECK API")
 
-pipeline = Pipeline()
-
 @app.post("/analyze")
-async def analyze_document(file: UploadFile = File(...)):
-    """Analyze an uploaded document."""
-    temp_path = f"/tmp/{file.filename}"
-    with open(temp_path, "wb") as buffer:
-        buffer.write(await file.read())
-    
-    doc_type = file.filename.split('.')[-1].lower()
-    try:
-        result = await pipeline.run(temp_path, doc_type)
-        os.remove(temp_path)
-        return result
-    except Exception as e:
-        os.remove(temp_path) if os.path.exists(temp_path) else None
-        raise HTTPException(status_code=500, detail=str(e))
+async def analyze_document(file: UploadFile = File(...)) -> Dict[str, Any]:
+    # TODO: Integrate with hive pipeline for processing
+    analysis_id = str(uuid.uuid4())
+    return {"analysis_id": analysis_id, "status": "queued"}
 
 @app.get("/report/{id}")
-async def get_report(id: str):
-    """Get analysis report by ID."""
-    # TODO: Implement database lookup for report
-    return {"id": id, "status": "not_implemented"}
+async def get_report(id: str) -> Dict[str, Any]:
+    # TODO: Fetch analysis report from storage
+    return {"id": id, "status": "not_found"}
 
 @app.post("/compare")
-async def compare_documents(data: Dict[str, Any]):
-    """Compare two documents for changes."""
-    # TODO: Implement comparison logic
-    return {"status": "not_implemented"}
+async def compare_documents(file1: UploadFile = File(...), file2: UploadFile = File(...)) -> Dict[str, Any]:
+    # TODO: Integrate with frady-sec-review comparator
+    comparison_id = str(uuid.uuid4())
+    return {"comparison_id": comparison_id, "status": "queued"}
 
 @app.get("/status/{id}")
-async def get_status(id: str):
-    """Get processing status by ID."""
-    # TODO: Implement status tracking
-    return {"id": id, "status": "not_implemented"}
+async def get_status(id: str) -> Dict[str, Any]:
+    # TODO: Check status in processing queue
+    return {"id": id, "status": "processing"}

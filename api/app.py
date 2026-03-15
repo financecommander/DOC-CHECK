@@ -2,31 +2,31 @@ from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from typing import Dict, Any
 
-app = FastAPI(title="DOC-CHECK API")
+import asyncio
 
-class AnalysisRequest(BaseModel):
-    file_path: str
-    doc_type: str
+from hive.storage import StorageBackend
+from hive.pipeline import Hive
 
-@app.post("/analyze")
-async def analyze_document(request: AnalysisRequest) -> Dict[str, Any]:
-    """Analyze a document via the pipeline."""
-    # TODO: Wire up hive.pipeline.Pipeline
-    return {"status": "queued", "id": "temp-id-123"}
+app = FastAPI(title='DOC-CHECK API')
+storage = StorageBackend()
+hive = Hive(storage)
 
-@app.get("/report/{id}")
-async def get_report(id: str) -> Dict[str, Any]:
-    """Retrieve analysis report by ID."""
-    # TODO: Fetch from database
-    return {"id": id, "report": "Analysis complete", "status": "done"}
+class ScreenRequest(BaseModel):
+    firm_name: str
 
-@app.post("/compare")
-async def compare_filings(request: Dict[str, Any]) -> Dict[str, Any]:
-    """Compare two filings for material changes."""
-    # TODO: Wire up frady-sec-review/comparator.py
-    return {"status": "queued", "comparison_id": "comp-456"}
+@app.post('/screen')
+async def screen_firm(request: ScreenRequest):
+    case_id = await hive.run(request.firm_name)
+    return {'case_id': case_id}
 
-@app.get("/status/{id}")
-async def get_status(id: str) -> Dict[str, Any]:
-    """Check status of an analysis or comparison."""
-    return {"id": id, "status": "in_progress"}
+@app.get('/cases/{case_id}')
+async def get_case(case_id: str):
+    case_data = storage.get_case(case_id)
+    if case_data is None:
+        raise HTTPException(status_code=404, detail='Case not found')
+    return case_data
+
+@app.post('/review')
+async def review_case(case_data: Dict[str, Any]):
+    # TODO: Implement review logic with queen_bee engine
+    return {'status': 'review initiated', 'data': case_data}

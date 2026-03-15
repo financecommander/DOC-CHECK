@@ -1,0 +1,7 @@
+fastapi==0.68.1
+uvicorn==0.15.0
+pydantic==1.8.2
+sqlite3==3.35.5
+aiohttp==3.7.4.post0
+pytest==6.2.5
+pytest-asyncio==0.15.1

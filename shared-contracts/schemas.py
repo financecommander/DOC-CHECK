@@ -1,19 +1,17 @@
 from pydantic import BaseModel
-from typing import Dict, Any, Optional
+from typing import Dict, Any, List
 
 class DocumentMetadata(BaseModel):
-    page_count: Optional[int] = None
-    paragraph_count: Optional[int] = None
-    title: Optional[str] = None
+    page_count: int = 0
+    title: str = ""
+    paragraph_count: int = 0
 
-class Document(BaseModel):
-    content: str
-    metadata: DocumentMetadata
-    doc_type: str
+class AnalysisResult(BaseModel):
+    id: str
+    status: str
+    report: Dict[str, Any]
 
-class AnalysisReport(BaseModel):
-    analysis_id: str
-    document: Document
-    classification: Dict[str, Any]
-    red_flags: Optional[Dict[str, Any]] = None
-    risk_factors: Optional[Dict[str, Any]] = None
+class ComparisonResult(BaseModel):
+    comparison_id: str
+    changes: List[Dict[str, Any]]
+    status: str

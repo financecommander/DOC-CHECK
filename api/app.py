@@ -1,27 +1,32 @@
-from fastapi import FastAPI, HTTPException, UploadFile, File
+from fastapi import FastAPI, HTTPException
+from pydantic import BaseModel
 from typing import Dict, Any
-import uuid
 
 app = FastAPI(title="DOC-CHECK API")
 
+class AnalysisRequest(BaseModel):
+    file_path: str
+    doc_type: str
+
 @app.post("/analyze")
-async def analyze_document(file: UploadFile = File(...)) -> Dict[str, Any]:
-    # TODO: Integrate with hive pipeline for processing
-    analysis_id = str(uuid.uuid4())
-    return {"analysis_id": analysis_id, "status": "queued"}
+async def analyze_document(request: AnalysisRequest) -> Dict[str, Any]:
+    """Analyze a document via the pipeline."""
+    # TODO: Wire up hive.pipeline.Pipeline
+    return {"status": "queued", "id": "temp-id-123"}
 
 @app.get("/report/{id}")
 async def get_report(id: str) -> Dict[str, Any]:
-    # TODO: Fetch analysis report from storage
-    return {"id": id, "status": "not_found"}
+    """Retrieve analysis report by ID."""
+    # TODO: Fetch from database
+    return {"id": id, "report": "Analysis complete", "status": "done"}
 
 @app.post("/compare")
-async def compare_documents(file1: UploadFile = File(...), file2: UploadFile = File(...)) -> Dict[str, Any]:
-    # TODO: Integrate with frady-sec-review comparator
-    comparison_id = str(uuid.uuid4())
-    return {"comparison_id": comparison_id, "status": "queued"}
+async def compare_filings(request: Dict[str, Any]) -> Dict[str, Any]:
+    """Compare two filings for material changes."""
+    # TODO: Wire up frady-sec-review/comparator.py
+    return {"status": "queued", "comparison_id": "comp-456"}
 
 @app.get("/status/{id}")
 async def get_status(id: str) -> Dict[str, Any]:
-    # TODO: Check status in processing queue
-    return {"id": id, "status": "processing"}
+    """Check status of an analysis or comparison."""
+    return {"id": id, "status": "in_progress"}
